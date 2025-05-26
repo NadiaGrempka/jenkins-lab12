@@ -1,7 +1,7 @@
 pipeline {
   agent {
     docker {
-      image '<TwojDockerHub>/custom-jenkins-agent-node:1.0.0'
+      image 'nadiagrempka/jenkins:1.0'
       args  '-u root -v /var/run/docker.sock:/var/run/docker.sock'
     }
   }
