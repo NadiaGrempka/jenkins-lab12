@@ -2,90 +2,86 @@ pipeline {
   agent {
     docker {
       image 'nadiagrempka/jenkins:2.0'
-      args  '-u root --privileged -v /var/run/docker.sock:/var/run/docker.sock'
+      args '-u root -v /var/run/docker.sock:/var/run/docker.sock --entrypoint=""'
     }
   }
-
-  environment {
-    APP_NAME    = 'microservice-app'
-    DOCKER_REG  = 'docker.io'
-    HUB_CRED_ID = 'dockerhub-credentials'
+  options {
+    skipDefaultCheckout()
+    timestamps()
+    buildDiscarder(logRotator(numToKeepStr: '10'))
   }
-
+//test
   stages {
     stage('Checkout') {
+      agent {
+        docker {
+          image 'nadiagrempka/jenkins:2.0'
+          args '-u root -v /var/run/docker.sock:/var/run/docker.sock --entrypoint=""'
+        }
+      }
       steps {
-        checkout scm
+        git url: 'https://github.com/NadiaGrempka/jenkins-lab12.git', branch: 'main'
+        sh 'mvn validate'
       }
     }
 
-    stage('Install & Lint') {
+    stage('Test & Coverage') {
       steps {
-        sh 'npm ci'
-        sh 'npm run lint'
-      }
-    }
-
-    stage('Parallel Tests & Coverage') {
-      parallel {
-        stage('Unit Tests') {
-          steps {
-            sh 'npm run test:unit'
-          }
-        }
-        stage('Integration Tests') {
-          steps {
-            sh 'npm run test:integration'
-          }
-        }
+        // testy jednostkowe + coverage w jednym etapie
+        sh 'mvn test'
+        junit '**/target/surefire-reports/*.xml'
+        // po zainstalowaniu pluginu Pipeline: JaCoCo:
+        //jacoco execPattern: '**/target/jacoco.exec'
       }
     }
 
     stage('Archive Artifacts') {
       steps {
-        junit 'junit.xml'
-        archiveArtifacts artifacts: 'coverage/**', fingerprint: true
-        publishCoverage adapters: [coberturaAdapter('coverage/cobertura-coverage.xml')]
+        archiveArtifacts artifacts: '**/target/*.jar', fingerprint: true
+        archiveArtifacts artifacts: '**/target/site/jacoco/**/*', allowEmptyArchive: true
       }
     }
 
-    stage('Build Docker Image') {
+    stage('Build & Push Docker Image') {
+      environment {
+        APP_NAME              = 'jenkins'
+        DOCKER_REPOSITORY     = "nadiagrempka/${APP_NAME}"
+        DOCKER_CREDENTIALS_ID = 'sha256:a3d73c5b43d47a4aa8ab563d001f89b6f1d557883b0dbac216140c1fc699adca'
+        DOCKER_REGISTRY       = 'docker.io'
+      }
       steps {
         script {
-          def tag   = "${env.BUILD_NUMBER}"
-          def image = "${DOCKER_REG}/${env.APP_NAME}:${tag}"
-          sh "docker build -t ${image} ."
-          sh "docker tag ${image} ${DOCKER_REG}/${env.APP_NAME}:latest"
+          def tagNum    = "${DOCKER_REPOSITORY}:${env.BUILD_NUMBER}"
+          def tagLatest = "${DOCKER_REPOSITORY}:2.0"
+          docker.build(tagNum, "-f Dockerfile .")
+          docker.build(tagLatest, "-f Dockerfile .")
+        }
+        withCredentials([usernamePassword(
+          credentialsId: DOCKER_CREDENTIALS_ID,
+          usernameVariable: 'DOCKER_USER',
+          passwordVariable: 'DOCKER_PASS'
+        )]) {
+          sh "echo \$DOCKER_PASS | docker login ${DOCKER_REGISTRY} -u \$DOCKER_USER --password-stdin"
+          sh "docker push ${DOCKER_REPOSITORY}:${env.BUILD_NUMBER}"
+          sh "docker push ${DOCKER_REPOSITORY}:2.0"
         }
       }
     }
 
-    stage('Push to Docker Hub') {
+    stage('Cleanup') {
+      agent any
       steps {
-        withCredentials([usernamePassword(
-          credentialsId: "${HUB_CRED_ID}",
-          usernameVariable: 'USER',
-          passwordVariable: 'PASS'
-        )]) {
-          sh 'echo "$PASS" | docker login -u "$USER" --password-stdin ${DOCKER_REG}'
-          sh "docker push ${DOCKER_REG}/${env.APP_NAME}:${env.BUILD_NUMBER}"
-          sh "docker push ${DOCKER_REG}/${env.APP_NAME}:latest"
-          sh 'docker logout'
-        }
+        sh '''
+          docker rmi nadiagrempka/jenkins:${BUILD_NUMBER} || true
+          docker rmi nadiagrempka/jenkins:2.0   || true
+          docker system prune -f                         || true
+        '''
       }
     }
   }
 
   post {
-    always {
-      sh 'docker image prune -f'
-      echo 'Czyszczenie zasobów wykonane'
-    }
-    success {
-      echo 'Pipeline zakończony powodzeniem!'
-    }
-    failure {
-      echo 'Ups! Coś poszło nie tak...'
-    }
+    success { echo '✅ Pipeline zakończony sukcesem' }
+    failure { echo '❌ Pipeline zakończony niepowodzeniem' }
   }
 }
