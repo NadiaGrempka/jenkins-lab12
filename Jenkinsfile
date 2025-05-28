@@ -2,7 +2,7 @@ pipeline {
   agent {
     docker {
       image 'nadiagrempka/jenkins:2.0'
-      args  '-u root -v /var/run/docker.sock:/var/run/docker.sock'
+      args  '-u root --privileged -v /var/run/docker.sock:/var/run/docker.sock'
     }
   }
 
@@ -45,7 +45,6 @@ pipeline {
       steps {
         junit 'junit.xml'
         archiveArtifacts artifacts: 'coverage/**', fingerprint: true
-        // Jeżeli masz plugin Cobertura:
         publishCoverage adapters: [coberturaAdapter('coverage/cobertura-coverage.xml')]
       }
     }
