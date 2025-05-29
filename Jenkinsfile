@@ -2,7 +2,7 @@ pipeline {
   agent {
     docker {
       image 'nadiagrempka/jenkins:2.0'
-      args '-u root -v /var/run/docker.sock:/var/run/docker.sock --privileged'
+      args '-u root -v /var/run/docker.sock:/var/run/docker.sock --entrypoint=""'
     }
   }
   options {
@@ -16,7 +16,7 @@ pipeline {
       agent {
         docker {
           image 'nadiagrempka/jenkins:2.0'
-          args '-u root -v /var/run/docker.sock:/var/run/docker.sock --privileged'
+          args '-u root -v /var/run/docker.sock:/var/run/docker.sock --entrypoint=""'
         }
       }
       steps {
@@ -44,7 +44,7 @@ pipeline {
 
     stage('Build & Push Docker Image') {
       environment {
-        APP_NAME              = 'jenkins'
+        APP_NAME              = 'jenkins-lab12'
         DOCKER_REPOSITORY     = "nadiagrempka/${APP_NAME}"
         DOCKER_CREDENTIALS_ID = 'sha256:a3d73c5b43d47a4aa8ab563d001f89b6f1d557883b0dbac216140c1fc699adca'
         DOCKER_REGISTRY       = 'docker.io'
@@ -52,7 +52,7 @@ pipeline {
       steps {
         script {
           def tagNum    = "${DOCKER_REPOSITORY}:${env.BUILD_NUMBER}"
-          def tagLatest = "${DOCKER_REPOSITORY}:2.0"
+          def tagLatest = "${DOCKER_REPOSITORY}:latest"
           docker.build(tagNum, "-f Dockerfile .")
           docker.build(tagLatest, "-f Dockerfile .")
         }
@@ -72,8 +72,8 @@ pipeline {
       agent any
       steps {
         sh '''
-          docker rmi nadiagrempka/jenkins:${BUILD_NUMBER} || true
-          docker rmi nadiagrempka/jenkins:2.0   || true
+          docker rmi nadiagrempka/jenkins-lab12:${BUILD_NUMBER} || true
+          docker rmi nadiagrempka/jenkins-lab12:latest   || true
           docker system prune -f                         || true
         '''
       }
