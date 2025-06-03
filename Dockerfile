@@ -18,17 +18,21 @@
 #  exec /usr/local/bin/jenkins.sh \
 #"]
 # Builder
-FROM node:18-alpine AS builder
+
+FROM node:18 AS builder
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci
-COPY . .
-RUN npm run lint
-
-# Runtime
+COPY src ./src
+COPY tests ./tests
+RUN npm test -- --ci --runInBand
+# ----------------------------
 FROM node:18-alpine
+ENV NODE_ENV=production
 WORKDIR /app
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/src ./src
+COPY package*.json ./
+RUN npm ci --omit=dev
+COPY src ./src
 EXPOSE 3000
-CMD ["npm", "start"]
+CMD ["node", "src/index.js"]
+
