@@ -2,7 +2,7 @@ pipeline {
   agent {
     docker {
       image 'nadiagrempka/custom-jenkins-build-agent:1.0.1'
-      args  '-u root'  // jeżeli trzeba, aby mieć uprawnienia do docker.sock
+      args  '-u root -v /var/run/docker.sock:/var/run/docker.sock'
     }
   }
   stages {
