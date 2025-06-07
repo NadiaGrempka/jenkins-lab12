@@ -5,6 +5,8 @@
   "scripts": {
     "start": "node src/index.js",
     "lint": "eslint src",
+    "test:unit": "jest --coverage --runInBand --testPathPattern=tests/unit.test.js",
+    "test:integration": "jest --runInBand --testPathPattern=tests/integration.test.js",
     "test": "jest --coverage"
   },
   "dependencies": {
