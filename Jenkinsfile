@@ -15,16 +15,20 @@ pipeline {
       parallel {
         stage('Unit Tests') {
           steps {
-            sh 'npm install'
-            sh 'npm test -- --coverage'
-            junit '**/test-results/*.xml'
-            archiveArtifacts artifacts: '**/coverage/**', fingerprint: true
+            dir('app') {
+                      sh 'npm install'
+                      sh 'npm test -- --coverage'
+                      junit 'test-results/*.xml'
+                      archiveArtifacts artifacts: 'coverage/**', fingerprint: true
+                    }
           }
         }
         stage('Integration Tests') {
           steps {
-            sh 'npm run integration-test'
-            junit '**/integration-results/*.xml'
+            dir('app') {
+              sh 'npm run integration-test'
+              junit '**/integration-results/*.xml'
+            }
           }
         }
       }
