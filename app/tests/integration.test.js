@@ -1,5 +1,5 @@
 const request = require('supertest');
-const app = require('../src/index');
+const app = require('../src/index');  // to teraz będzie sama funkcja-express
 
 describe('GET /api/status', () => {
     it('should return status and version', async () => {

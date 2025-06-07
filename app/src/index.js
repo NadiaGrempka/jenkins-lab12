@@ -7,12 +7,26 @@ app.get('/api/status', (_, res) => {
 });
 
 app.get('/api/data', (_, res) => {
-    res.json({ data: [{ id: 1, name: 'foo' }, { id: 2, name: 'bar' }] });
+    res.json({
+        data: [
+            { id: 1, name: 'foo' },
+            { id: 2, name: 'bar' }
+        ]
+    });
 });
 
-const port = process.env.PORT || 3000;
-app.listen(port, () => {
-    console.log(`Service listening on port ${port}`);
-});
+function add(a, b) {
+    return a + b;
+}
 
+// Uruchamiaj serwer tylko, gdy to główny moduł
+if (require.main === module) {
+    const port = process.env.PORT || 3000;
+    app.listen(port, () => {
+        console.log(`Service listening on port ${port}`);
+    });
+}
+
+// Eksportuj sam app jako funkcję + podczep add jako property
 module.exports = app;
+module.exports.add = add;
