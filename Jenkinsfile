@@ -17,7 +17,7 @@ pipeline {
           steps {
             dir('app') {
                       sh 'npm install'
-                      sh 'npm test -- --coverage'
+                      sh 'npm run test:unit --coverage'
                       junit 'coverage/*.xml'
                       archiveArtifacts artifacts: 'coverage/**', fingerprint: true
                     }
@@ -26,8 +26,7 @@ pipeline {
         stage('Integration Tests') {
           steps {
             dir('app') {
-              sh 'npm run integration-test'
-              junit '**/integration-results/*.xml'
+              sh 'npm run test:integration'
             }
           }
         }
