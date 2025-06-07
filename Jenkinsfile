@@ -12,44 +12,44 @@ pipeline {
       }
     }
     stage('Parallel Tests & Coverage') {
-      parallel {
-        stage('Unit Tests') {
-          steps {
-            dir('app') {
-                      sh 'npm install'
-                      sh 'npm run test:unit --coverage'
-                      junit 'coverage/*.xml'
-                      archiveArtifacts artifacts: 'coverage/**', fingerprint: true
-                    }
-          }
-        }
-        stage('Integration Tests') {
-          steps {
-            dir('app') {
-              sh 'npm run test:integration'
-            }
-          }
-        }
-      }
+       parallel {
+                      stage('Unit Tests & Coverage') {
+                          steps {
+                              sh 'npm run test'
+                          }
+                      }
+                      stage('Integration Tests') {
+                          steps {
+                              sh 'npm run test'
+                          }
+                      }
+                  }
     }
-    stage('Archive Coverage HTML') {
-      steps {
-        publishHTML(target: [
-          allowMissing: false,
-          alwaysLinkToLastBuild: true,
-          keepAll: true,
-          reportDir: 'app/coverage/lcov-report',
-          reportFiles: 'index.html',
-          reportName: 'Coverage Report'
-        ])
-      }
-    }
+//     stage('Archive Coverage HTML') {
+//       steps {
+//         publishHTML(target: [
+//           allowMissing: false,
+//           alwaysLinkToLastBuild: true,
+//           keepAll: true,
+//           reportDir: 'app/coverage/lcov-report',
+//           reportFiles: 'index.html',
+//           reportName: 'Coverage Report'
+//         ])
+//       }
+//     }
+//
+//     stage('Publish Coverage') {
+//           steps {
+//             cobertura coberturaReportFile: 'app/coverage/cobertura-coverage.xml'
+//           }
+//         }
 
-    stage('Publish Coverage') {
-          steps {
-            cobertura coberturaReportFile: 'app/coverage/cobertura-coverage.xml'
-          }
-        }
+    stage('Archive Artifacts') {
+                steps {
+                    archiveArtifacts artifacts: 'coverage/**', allowEmptyArchive: true
+                    junit 'reports/junit/junit.xml'
+                }
+            }
 
     stage('Build Docker Image') {
       steps {
