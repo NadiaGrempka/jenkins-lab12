@@ -57,7 +57,7 @@ pipeline {
     stage('Archive Artifacts') {
                 steps {
                     archiveArtifacts artifacts: 'coverage/**', allowEmptyArchive: true
-                    junit 'reports/junit/junit.xml'
+                    junit 'app/junit.xml'
                 }
             }
 
