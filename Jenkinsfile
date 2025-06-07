@@ -75,8 +75,8 @@ pipeline {
   }
   post {
     always {
-      sh 'docker rmi nadiagrempka/moj-microservice:${env.BUILD_NUMBER} || true'
-      sh 'docker rmi nadiagrempka/moj-microservice:latest || true'
+      sh "docker rmi nadiagrempka/moj-microservice:${env.BUILD_NUMBER} || true"
+      sh "docker rmi nadiagrempka/moj-microservice:latest || true"
       echo "Pipeline zakończony (sukces lub porażka)."
     }
   }
