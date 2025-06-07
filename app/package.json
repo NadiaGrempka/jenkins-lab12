@@ -21,7 +21,7 @@
   "jest": {
     "testEnvironment": "node",
     "coverageDirectory": "coverage",
-    "coverageReporters": ["lcov", "text", "cobertura"],
+    "coverageReporters": ["lcov", "text", "cobertura", "html"],
     "reporters": [
       "default",
       ["jest-junit", {

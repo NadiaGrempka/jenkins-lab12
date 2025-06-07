@@ -32,6 +32,25 @@ pipeline {
         }
       }
     }
+    stage('Archive Coverage HTML') {
+      steps {
+        publishHTML(target: [
+          allowMissing: false,
+          alwaysLinkToLastBuild: true,
+          keepAll: true,
+          reportDir: 'app/coverage/lcov-report',
+          reportFiles: 'index.html',
+          reportName: 'Coverage Report'
+        ])
+      }
+    }
+
+    stage('Publish Coverage') {
+          steps {
+            cobertura coberturaReportFile: 'app/coverage/cobertura-coverage.xml'
+          }
+        }
+
     stage('Build Docker Image') {
       steps {
         script {
