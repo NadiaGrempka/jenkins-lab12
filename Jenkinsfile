@@ -12,19 +12,28 @@ pipeline {
       }
     }
     stage('Parallel Tests & Coverage') {
-       parallel {
-                      stage('Unit Tests & Coverage') {
-                          steps {
-                              sh 'npm run test'
-                          }
-                      }
-                      stage('Integration Tests') {
-                          steps {
-                              sh 'npm run test'
-                          }
-                      }
-                  }
+      parallel {
+        stage('Unit Tests') {
+          steps {
+            dir('app') {
+                      sh 'npm install'
+                      sh 'npm run test:unit --coverage'
+                      junit 'coverage/*.xml'
+                      archiveArtifacts artifacts: 'coverage/**', fingerprint: true
+                    }
+          }
+        }
+        stage('Integration Tests') {
+          steps {
+            dir('app') {
+              sh 'npm run test:integration'
+            }
+          }
+        }
+      }
     }
+
+
 //     stage('Archive Coverage HTML') {
 //       steps {
 //         publishHTML(target: [
@@ -43,6 +52,7 @@ pipeline {
 //             cobertura coberturaReportFile: 'app/coverage/cobertura-coverage.xml'
 //           }
 //         }
+
 
     stage('Archive Artifacts') {
                 steps {
