@@ -47,11 +47,11 @@ pipeline {
 //       }
 //     }
 //
-//     stage('Publish Coverage') {
-//           steps {
-//             cobertura coberturaReportFile: 'app/coverage/cobertura-coverage.xml'
-//           }
-//         }
+    stage('Publish Coverage') {
+          steps {
+            cobertura coberturaReportFile: 'app/coverage/cobertura-coverage.xml'
+          }
+        }
 
 
     stage('Archive Artifacts') {
