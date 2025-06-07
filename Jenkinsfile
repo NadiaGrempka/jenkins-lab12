@@ -55,11 +55,14 @@ pipeline {
 
 
     stage('Archive Artifacts') {
-                steps {
-                    archiveArtifacts artifacts: 'coverage/**', allowEmptyArchive: true
-                    junit 'app/junit.xml'
-                }
-            }
+      steps {
+        dir('app') {
+          archiveArtifacts artifacts: 'coverage/**', allowEmptyArchive: true
+          junit 'junit.xml'
+        }
+      }
+    }
+
 
     stage('Build Docker Image') {
       steps {

@@ -21,18 +21,18 @@
 
 FROM node:18 AS builder
 WORKDIR /app
-COPY package*.json ./
+COPY app/package*.json ./
 RUN npm ci
-COPY src ./src
+COPY app/src ./src
 COPY tests ./tests
 RUN npm test -- --ci --runInBand
 # ----------------------------
 FROM node:18-alpine
 ENV NODE_ENV=production
 WORKDIR /app
-COPY package*.json ./
+COPY app/package*.json ./
 RUN npm ci --omit=dev
-COPY src ./src
+COPY app/src ./src
 EXPOSE 3000
 CMD ["node", "src/index.js"]
 
