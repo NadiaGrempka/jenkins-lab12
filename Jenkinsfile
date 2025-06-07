@@ -18,7 +18,7 @@ pipeline {
             dir('app') {
                       sh 'npm install'
                       sh 'npm test -- --coverage'
-                      junit 'test-results/*.xml'
+                      junit 'coverage/*.xml'
                       archiveArtifacts artifacts: 'coverage/**', fingerprint: true
                     }
           }
